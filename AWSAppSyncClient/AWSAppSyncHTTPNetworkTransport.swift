@@ -10,6 +10,28 @@ enum AuthType {
     case awsIAM
     case apiKey
     case oidcToken
+    case amazonCognitoUserPools
+}
+
+extension AuthType {
+    var rawValue: String {
+        switch self {
+        case .awsIAM: return "AWS_IAM"
+        case .apiKey: return "API_KEY"
+        case .oidcToken: return "OPENID_CONNECT"
+        case .amazonCognitoUserPools: return "AMAZON_COGNITO_USER_POOLS"
+        }
+    }
+    
+    public static func getAuthType(rawValue: String) throws -> AuthType {
+        switch rawValue {
+        case "AWS_IAM": return .awsIAM
+        case "API_KEY": return .apiKey
+        case "OPENID_CONNECT": return .oidcToken
+        case "AMAZON_COGNITO_USER_POOLS": return .amazonCognitoUserPools
+        default: throw AWSAppSyncClientInfoError(errorMessage: "AuthType not recognized. Pass in a valid AuthType.")
+        }
+    }
 }
 
 public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
@@ -190,7 +212,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
     public func sendSubscriptionRequest<Operation: GraphQLOperation>(operation: Operation, completionHandler: @escaping (JSONObject?, Error?) -> Void) throws -> Cancellable {
         
         let networkTransportOperation = AWSAppSyncHTTPNetworkTransportOperation()
-    
+        
         func sendRequest(request: URLRequest) {
             let dataTask = self.session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error:Error?) in
                 
@@ -252,7 +274,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         return networkTransportOperation
     }
-
+    
     
     /// Send a GraphQL operation to a server and return a response.
     ///
@@ -327,7 +349,7 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         
         return networkTransportOperation
     }
-
+    
     private let sendOperationIdentifiers: Bool
     
     private func requestBody<Operation: GraphQLOperation>(for operation: Operation) -> GraphQLMap {
@@ -358,3 +380,4 @@ public class AWSAppSyncHTTPNetworkTransport: AWSNetworkTransport {
         }
     }
 }
+
